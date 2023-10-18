@@ -1,0 +1,35 @@
+.container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  align-items: center;
+  background-color: #131324;
+  .chat-container {
+    height: 85vh;
+    width: 85vw;
+    background-color: #00000076;
+    display: grid;
+    grid-template-columns: 30% 70%;
+    @media screen and (min-width: 720px) and (max-width: 1080px) {
+      grid-template-columns: 35% 65%;
+    }
+    .left{
+      border-right: 2px solid green;
+      .active{
+        width: 8px;
+        height: 8px;
+        background: rgb(11, 207, 44);
+        border-radius: 50%;
+      }
+      .non_active{
+        width: 8px;
+        height: 8px;
+        background: rgb(196, 12, 58);
+        border-radius: 50%;
+      }
+    }
+  }
+}

@@ -29,20 +29,10 @@ export class Room {
   @Column()
   is_connected: boolean;
 
-  // Define the one-to-many relationship with the Message entity
-  @OneToMany(() => Message, (message) => message.room)
+  @OneToMany(() => RoomUser, (roomUsers) => roomUsers.room)
+  users: RoomUser[];
+
+  @OneToMany(() => Message, (messenger) => messenger.room)
   messages: Message[];
 
-  // Define the one-to-many relationship with the RoomUser entity
-  @OneToMany(() => RoomUser, (roomUser) => roomUser.room)
-  roomUsers: RoomUser[];
-
-  // Define the one-to-one relationship with the Message entity for the last message
-  @OneToOne(() => Message, { onDelete: "SET NULL" })
-  @JoinColumn()
-  lastMessage: Message;
-
-  // Additional custom properties
-  users: any; // Replace 'any' with the appropriate type
-  hasSeen: boolean;
 }

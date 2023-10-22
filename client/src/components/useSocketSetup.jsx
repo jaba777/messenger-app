@@ -18,6 +18,7 @@ const useSocketSetup = () => {
     socket.on("auth", (authData) => {
       console.log("Received auth data:", authData);
       setActiveUsers(authData);
+      console.log(authData);
     });
 
     socket.on("disconnect", () => {

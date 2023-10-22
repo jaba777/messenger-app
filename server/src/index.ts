@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import redisClient from "./redis";
 import cors from "cors";
 import connect from "./db";
+import authRoutes from "./routes/authRoutes";
 
 dotenv.config();
 
@@ -25,15 +26,6 @@ const getActiveUsers = async () => {
   return Array.isArray(users) ? users : [];
 };
 
-app.use(helmet());
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
-  })
-);
-app.use(bodyParser.json());
-
 connect
   .then((connection) => {
     console.log("Connected to the database");
@@ -43,9 +35,20 @@ connect
     console.error("Error connecting to the database:", error);
   });
 
+app.use(helmet());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
+app.use(bodyParser.json());
+
 app.get("/", (req: Request, res: Response) => {
   res.json("hello world");
 });
+
+app.use("/auth", authRoutes);
 
 io.on("connection", (socket) => {
   socket.on("auth", async (authData: { user: any }) => {
@@ -59,6 +62,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", async () => {
+    console.log(socket.id);
     await userLeave(socket.id);
     socket.removeAllListeners();
     redisClient.publish(
@@ -79,6 +83,7 @@ async function userLeave(socketId: string) {
   let users = await getActiveUsers();
   let actives = users.filter((user: any) => user.id !== socketId);
   await redisClient.set("spacejobs_activeUsers", JSON.stringify(actives));
+  io.emit("auth", actives);
   return actives;
 }
 
@@ -105,6 +110,7 @@ const setActiveUser = async (user: { id: string; userData: any }) => {
   }
 
   await redisClient.set("spacejobs_activeUsers", JSON.stringify(users));
+  io.emit("auth", users);
   return users;
 };
 

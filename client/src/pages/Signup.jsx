@@ -8,12 +8,14 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
   const navigate = useNavigate();
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
       const res = await axios.post("http://localhost:4000/auth/register", {
-        username: name,
+        name,
+        surname,
         email,
         password,
       });
@@ -37,6 +39,18 @@ const Signup = () => {
               placeholder="Enter your userName"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              id="exampleInputEmail"
+              placeholder="Enter your surname"
+              value={surname}
+              onChange={(e) => setSurname(e.target.value)}
               required
             />
           </div>

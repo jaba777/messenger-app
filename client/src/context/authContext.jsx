@@ -18,13 +18,13 @@ export const AuthProvider = ({ children }) => {
     setAuth({ user: data.user, token: data.token });
   };
 
-  const getUser = () => {
+  const getUser = async () => {
     fetch("http://localhost:4000/auth/user", {
       method: "GET",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        authorisation: token,
+        authorization: token,
       },
     })
       .then((res) => {

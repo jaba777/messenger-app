@@ -62,7 +62,6 @@ const Home = () => {
 
   const createRoom = async (receiverId) => {
     try {
-      createRoom;
       const users = await axios.post(`http://localhost:4000/auth/room`, {
         sender: auth.user.id,
         receiver: receiverId,
@@ -131,7 +130,7 @@ const Home = () => {
                           <span style={{ fontSize: "1.3rem" }}>
                             <AiOutlineUser />
                           </span>
-                          <p style={{ fontWeight: "800" }}>{props.username}</p>
+                          <p style={{ fontWeight: "800" }}>{props.name}</p>
                           <div
                             className={isActive ? "active" : "non_active"}
                           ></div>

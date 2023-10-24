@@ -9,7 +9,7 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "experimentalDecorators": true,
-    "types": ["node", "bcrypt", "jsonwebtoken"] // Add "bcrypt" to the types
+    "types": ["node", "bcrypt", "jsonwebtoken"] 
   },
   "include": ["src/**/*"]
 }

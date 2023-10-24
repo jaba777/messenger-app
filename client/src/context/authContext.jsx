@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
     setAuth({ user: data.user, token: data.token });
   };
 
-  const getUser = async () => {
+  const getUser = () => {
     fetch("http://localhost:4000/auth/user", {
       method: "GET",
       credentials: "include",

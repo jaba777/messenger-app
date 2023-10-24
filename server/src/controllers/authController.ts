@@ -181,7 +181,10 @@ const getRoom = async (req: Request, res: Response): Promise<void> => {
   try {
     const { sender, receiver } = req.body;
     const getroomUsers = await getUserRoom(sender, receiver);
-    res.json(getroomUsers);
+    res.status(200).send({
+      success:true,
+      room: getroomUsers
+    });
   } catch (error) {
     res.status(400).json({
       success: false,

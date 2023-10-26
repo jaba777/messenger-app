@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
     "target": "ES6",
     "emitDecoratorMetadata": true,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "baseUrl": "src",
     "outDir": "dist",
     "sourceMap": true,
     "noImplicitAny": true,
     "experimentalDecorators": true,
-    "types": ["node", "bcrypt", "jsonwebtoken"] 
+    "types": ["node", "bcrypt", "jsonwebtoken", "typeorm", "ts-node"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

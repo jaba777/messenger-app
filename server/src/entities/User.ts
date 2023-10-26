@@ -19,6 +19,6 @@ export class User {
   password: string;
 
   // Define the relationship with the Message entity
-  @OneToMany(() => RoomUser, (roomUsers) => roomUsers.user)
-  rooms: RoomUser[];
+  @OneToMany(() => RoomUser, (roomUser) => roomUser.user)
+  roomUsers: RoomUser[];
 }

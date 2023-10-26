@@ -29,10 +29,9 @@ export class Room {
   @Column()
   is_connected: boolean;
 
-  @OneToMany(() => RoomUser, (roomUsers) => roomUsers.room)
-  users: RoomUser[];
+  @OneToMany(() => RoomUser, (roomUser) => roomUser.room)
+  roomUsers: RoomUser[];
 
   @OneToMany(() => Message, (messenger) => messenger.room)
   messages: Message[];
-
 }

@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
-import { getConnection, Repository, ILike } from "typeorm";
+import { getConnection, Repository, ILike, Not } from "typeorm";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../entities/User";
 import { getUserRoom } from "../helper/roomService";
+import { Room } from "../entities/Room";
+import { RoomUser } from "../entities/RoomUser";
 
 const jwtSecret: string = process.env.JWT_SECRET;
 
@@ -180,10 +182,16 @@ const searchUsers = async (req: Request, res: Response): Promise<void> => {
 const getRoom = async (req: Request, res: Response): Promise<void> => {
   try {
     const { sender, receiver } = req.body;
+    if (sender === receiver) {
+      res.status(200).send({
+        success: false,
+        message: "you can't create room with yourself",
+      });
+    }
     const getroomUsers = await getUserRoom(sender, receiver);
     res.status(200).send({
-      success:true,
-      room: getroomUsers
+      success: true,
+      room: getroomUsers,
     });
   } catch (error) {
     res.status(400).json({
@@ -194,4 +202,45 @@ const getRoom = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export { registerController, loginController, getUser, searchUsers, getRoom };
+const getRooms = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const roomUserRepository: Repository<RoomUser> =
+      getConnection().getRepository(RoomUser);
+
+    const roomRepository: Repository<Room> =
+      getConnection().getRepository(Room);
+    const numericId = parseInt(id, 10);
+
+    const rooms = await roomRepository
+      .createQueryBuilder("room")
+      .innerJoin("room.roomUsers", "roomUser")
+      .innerJoin("roomUser.user", "user")
+      .where("user.id = :userId", { userId: numericId })
+      .getMany();
+    for (const room of rooms) {
+      const roomUsers = await roomUserRepository.find({
+        where: {
+          room: { id: room.id },
+          user: Not(numericId),
+        },
+        relations: ["user"],
+      });
+
+      room.roomUsers = roomUsers;
+    }
+
+    res.json({ rooms: rooms });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export {
+  registerController,
+  loginController,
+  getUser,
+  searchUsers,
+  getRoom,
+  getRooms,
+};

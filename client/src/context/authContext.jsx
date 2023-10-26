@@ -14,11 +14,11 @@ export const AuthProvider = ({ children }) => {
   const [activeUsers, setActiveUsers] = useState([]);
   const navigate = useNavigate();
 
-  const setUser = (data) => {
+  const setUser = async (data) => {
     setAuth({ user: data.user, token: data.token });
   };
 
-  const getUser = () => {
+  const getUser = async () => {
     fetch("http://localhost:4000/auth/user", {
       method: "GET",
       credentials: "include",
@@ -42,10 +42,48 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  const getRooms = async (userId) => {
+    fetch(`http://localhost:4000/auth/rooms/${userId}`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: token,
+      },
+    })
+      .then((res) => {
+        if (!res.ok || res.status >= 400) {
+          throw new Error("Request failed with status " + res.status);
+        }
+        return res.json();
+      })
+      .then((data) => {
+       console.log(data)
+      })
+      .catch((err) => {
+        console.error("Error:", err);
+      });
+  };
+
+  useEffect(() => {
+    if (auth.user) {
+      getRooms(auth.user.id);
+      console.log(12)
+    }
+  }, [auth]);
+
   useEffect(() => {
     setAuth({ ...auth, token: token });
-    getUser();
+    if (token) {
+      getUser();
+    }
   }, []);
+
+  // useEffect(() => {
+  //   if (auth.user) {
+  //     getRooms(auth.user.id);
+  //   }
+  // }, [auth]);
 
   return (
     <AuthContext.Provider

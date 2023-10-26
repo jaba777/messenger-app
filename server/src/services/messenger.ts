@@ -1,4 +1,4 @@
-import { getConnection, Repository } from "typeorm";
+import { getConnection, Repository, SelectQueryBuilder } from "typeorm";
 import { RoomUser } from "../entities/RoomUser";
 import { Room } from "../entities/Room";
 import { v4 as uuidv4 } from "uuid";
@@ -8,13 +8,26 @@ const getRoomUser = async (sender: number, receiver: number) => {
   try {
     const roomUserRepository: Repository<RoomUser> =
       getConnection().getRepository(RoomUser);
+    const roomRepository: Repository<Room> =
+      getConnection().getRepository(Room);
 
-    const roomUser1 = await roomUserRepository.findOne({
-      // where: { user_id: sender },
-      // relations: ['room'], // Include the 'room' relation
-    });
+    const result = await roomUserRepository
+      .createQueryBuilder("roomUser")
+      .leftJoinAndSelect("roomUser.room", "room")
+      .where("roomUser.user.id = :receiver", { receiver: receiver })
+      .andWhere((qb: SelectQueryBuilder<RoomUser>) => {
+        const subQuery = qb
+          .subQuery()
+          .select("ru.room.id")
+          .from(RoomUser, "ru")
+          .where("ru.user.id = :sender", { sender: sender })
+          .getQuery();
 
-    return roomUser1;
+        return `roomUser.room.id IN ${subQuery}`;
+      })
+      .getOne();
+
+    return result;
   } catch (error) {}
 };
 
@@ -43,7 +56,7 @@ const updateRoom = async (roomId: number, isConnected: boolean) => {
     const roomUpdate = await roomRepository.findOne({ where: { id: roomId } });
     if (roomUpdate) {
       roomUpdate.is_connected = isConnected;
-      return await roomRepository.save(roomUpdate);
+      await roomRepository.save(roomUpdate);
     } else {
       console.log("error");
     }

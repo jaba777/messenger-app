@@ -16,7 +16,7 @@ const Login = () => {
         email,
         password,
       });
-      setUser(res.data);
+      await setUser(res.data);
       navigate("/home");
       console.log(res.data);
     } catch (error) {

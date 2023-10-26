@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from "express";
 import { Server } from "socket.io";
 import http from "http";
 import helmet from "helmet";
+
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import redisClient from "./redis";
@@ -91,22 +92,23 @@ const setActiveUser = async (user: { id: string; userData: any }) => {
   let users = JSON.parse(await redisClient.get("spacejobs_activeUsers"));
   let find: any;
 
-  if (users.length !== 0) {
+  if (users && users.length !== 0 && user.userData) {
     find = users.find(
-      (item: any) => item.userData.email === user.userData.email
+      (item: any) =>
+        item.userData && item.userData.email === user.userData.email
     );
   }
-
-  if (Array.isArray(users) && !find) {
+  if (Array.isArray(users) && !find && user.userData) {
     users.push(user);
   } else if (find) {
     const filter = users.filter(
-      (item: any) => item.userData.email !== find.userData.email
+      (item: any) =>
+        item.userData && item.userData.email !== user.userData.email
     );
     users = filter;
     users.push(user);
   } else {
-    users = JSON.parse(await redisClient.get("spacejobs_activeUsers"));
+    users = JSON.parse(await redisClient.get("spacejobs_activeUsers")) || [];
   }
 
   await redisClient.set("spacejobs_activeUsers", JSON.stringify(users));

@@ -6,6 +6,7 @@ import { User } from "../entities/User";
 import { getUserRoom } from "../helper/roomService";
 import { Room } from "../entities/Room";
 import { RoomUser } from "../entities/RoomUser";
+import redisClient from "../redis";
 
 const jwtSecret: string = process.env.JWT_SECRET;
 
@@ -188,7 +189,11 @@ const getRoom = async (req: Request, res: Response): Promise<void> => {
         message: "you can't create room with yourself",
       });
     }
+    
     const getroomUsers = await getUserRoom(sender, receiver);
+
+    redisClient.publish("channel", JSON.stringify(getroomUsers));
+
     res.status(200).send({
       success: true,
       room: getroomUsers,
@@ -229,6 +234,8 @@ const getRooms = async (req: Request, res: Response) => {
 
       room.roomUsers = roomUsers;
     }
+
+    redisClient.publish('channel', JSON.stringify(rooms));
 
     res.json({ rooms: rooms });
   } catch (error) {

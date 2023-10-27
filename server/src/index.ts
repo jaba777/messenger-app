@@ -51,11 +51,19 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/auth", authRoutes);
 
+redis.subscribe("channel");
+
+redis.on("message", async (channel, resp) => {
+  resp = JSON.parse(resp);
+  console.log(resp);
+});
+
 io.on("connection", (socket) => {
+
   socket.on("auth", async (authData: { user: any }) => {
     await userJoin(socket.id, authData.user);
     redisClient.publish(
-      "spacejobs_channel",
+      "channel",
       JSON.stringify({
         event: "sendActiveUsers",
       })
@@ -67,7 +75,7 @@ io.on("connection", (socket) => {
     await userLeave(socket.id);
     socket.removeAllListeners();
     redisClient.publish(
-      "spacejobs_channel",
+      "channel",
       JSON.stringify({
         event: "sendActiveUsers",
       })
@@ -85,7 +93,6 @@ async function userLeave(socketId: string) {
   let actives = users.filter((user: any) => user.id !== socketId);
   await redisClient.set("spacejobs_activeUsers", JSON.stringify(actives));
   io.emit("auth", actives);
-  return actives;
 }
 
 const setActiveUser = async (user: { id: string; userData: any }) => {

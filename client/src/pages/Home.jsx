@@ -6,19 +6,21 @@ import Input from "@mui/material/Input";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import FormControl from "@mui/material/FormControl";
-import TextField from "@mui/material/TextField";
-import { useTrail, animated } from "@react-spring/web";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import axios from "axios";
 import { AiOutlineUser } from "react-icons/ai";
 import { AuthContext } from "../context/authContext";
+import { BiUserCircle } from "react-icons/bi";
+
+//BiUserCircle
 
 const Home = () => {
   useSocketSetup();
   const [keyword, setkeyword] = React.useState("");
   const [users, setUsers] = React.useState([]);
+  const [getRoom, setGetRoom] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
-  const { activeUsers, auth } = React.useContext(AuthContext);
+  const { activeUsers, auth, rooms } = React.useContext(AuthContext);
   const searchUsers = (e) => {
     setkeyword(e.target.value);
   };
@@ -66,7 +68,10 @@ const Home = () => {
         sender: auth.user.id,
         receiver: receiverId,
       });
-      console.log(users.data);
+      console.log(users.data.room.findFirst);
+      if (users.data.room.findFirst.is === true) {
+        setGetRoom(users.data.room);
+      } 
     } catch (error) {
       console.log(error);
     }
@@ -140,6 +145,31 @@ const Home = () => {
                 </div>
               </FormControl>
             </Box>
+
+            <div className="room_container">
+              {rooms.map((item, index) => (
+                <div key={index} className="room_box">
+                  <div className="userIcon">
+                    <BiUserCircle />
+                  </div>
+                  <div className="room_text">
+                    <p>{item.roomUsers[0].user.name}</p>
+                  </div>
+
+                  {/* <div>{item.roomUsers[0].user.name}</div> */}
+                </div>
+              ))}
+              {getRoom !== null && (
+                <div className="room_box">
+                  <div className="userIcon">
+                    <BiUserCircle />
+                  </div>
+                  <div className="room_text">
+                    <p>{getRoom.user.name}</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="right"></div>
         </div>

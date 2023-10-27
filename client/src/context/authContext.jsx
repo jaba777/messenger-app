@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
     user: null,
     token: token,
   });
+  const [rooms, setRooms] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
   const navigate = useNavigate();
 
@@ -58,7 +59,8 @@ export const AuthProvider = ({ children }) => {
         return res.json();
       })
       .then((data) => {
-       console.log(data)
+        console.log("arrayRoom", data.rooms[0]);
+        setRooms(data.rooms);
       })
       .catch((err) => {
         console.error("Error:", err);
@@ -68,7 +70,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (auth.user) {
       getRooms(auth.user.id);
-      console.log(12)
     }
   }, [auth]);
 
@@ -87,7 +88,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ auth, setAuth, setUser, activeUsers, setActiveUsers }}
+      value={{ auth, setAuth, setUser, activeUsers, setActiveUsers, rooms }}
     >
       {children}
     </AuthContext.Provider>

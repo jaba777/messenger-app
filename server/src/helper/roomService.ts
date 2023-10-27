@@ -17,23 +17,30 @@ const getUserRoom = async (sender: number, receiver: number): Promise<any> => {
       where: { id: sender },
     });
 
-    // const findReciverUser= await userRepository.findOne({
-    //   where: { id: sender },
-    // });
+    let getRoomUserService = await getRoomUser(findUser.id, receiver);
 
-    const getRoomUserService = await getRoomUser(findUser.id, receiver);
+    let findFirst = { is: false };
 
     console.log("getRoomUserService", getRoomUserService);
 
     let room: Room;
     if (!getRoomUserService) {
-      room = await create(sender, receiver);
+      await create(sender, receiver);
+      getRoomUserService = await getRoomUser(findUser.id, receiver);
+      room = getRoomUserService.room;
+      findFirst.is = true;
     } else {
       room = getRoomUserService.room;
       await updateRoom(room.id, true);
+      findFirst.is = false;
     }
 
-    return { room: room, user: getRoomUserService.user, roomId: room.uuid };
+    return {
+      room: room,
+      user: getRoomUserService.user,
+      roomId: room.uuid,
+      findFirst,
+    };
   } catch (error) {}
 };
 

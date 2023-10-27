@@ -14,6 +14,7 @@ const getRoomUser = async (sender: number, receiver: number) => {
     const result = await roomUserRepository
       .createQueryBuilder("roomUser")
       .leftJoinAndSelect("roomUser.room", "room")
+      .leftJoinAndSelect("roomUser.user", "user")
       .where("roomUser.user.id = :receiver", { receiver: receiver })
       .andWhere((qb: SelectQueryBuilder<RoomUser>) => {
         const subQuery = qb
@@ -38,14 +39,14 @@ const createRoom = async (isConnected: boolean) => {
     const room = await roomRepository.save({
       uuid: uuidv4(),
       last_message_at: new Date(),
-      is_blocked: false, // Provide a value for is_blocked
-      blocked_by: 0, // Provide a value for blocked_by
+      is_blocked: false,
+      blocked_by: 0,
       is_connected: isConnected || false,
     });
     return room;
   } catch (error) {
     console.error("Error creating room:", error);
-    throw error; // Re-throw the error to handle it where you call createRoom
+    throw error;
   }
 };
 

@@ -12,6 +12,7 @@ const useSocketSetup = () => {
     socket.on("connect", () => {
       if (auth.user !== null) {
         socket.emit("auth", auth);
+        //socket.emit("room", auth.user.id);
       }
     });
 

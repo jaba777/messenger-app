@@ -12,6 +12,9 @@
     "experimentalDecorators": true,
     "types": ["node", "bcrypt", "jsonwebtoken", "typeorm", "ts-node"]
   },
+  "paths": {
+    "*": ["src/*"]
+  },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }

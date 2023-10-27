@@ -16,19 +16,45 @@
     @media screen and (min-width: 720px) and (max-width: 1080px) {
       grid-template-columns: 35% 65%;
     }
-    .left{
+    .left {
       border-right: 2px solid green;
-      .active{
+      .active {
         width: 8px;
         height: 8px;
         background: rgb(11, 207, 44);
         border-radius: 50%;
       }
-      .non_active{
+      .non_active {
         width: 8px;
         height: 8px;
         background: rgb(196, 12, 58);
         border-radius: 50%;
+      }
+
+      .room_container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: start;
+        color: #fff;
+        gap: 0.6rem;
+        .room_box {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 300px;
+          max-width: 95%;
+          padding: 0.2rem 0.5rem;
+          border: 1px solid rgb(49, 182, 9);
+          .userIcon {
+            font-size: 1.7rem;
+          }
+          .room_text {
+            p {
+              font-weight: 800;
+            }
+          }
+        }
       }
     }
   }

@@ -1,6 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne,JoinColumn } from "typeorm";
-import { User } from "./User"; // Assuming you have a User entity
-import { Room } from "./Room"; // Assuming you have a Room entity
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from "typeorm";
+import { User } from "./User";
+import { Room } from "./Room";
 
 @Entity()
 export class RoomUser {
@@ -10,9 +16,8 @@ export class RoomUser {
   @Column()
   has_seen: boolean;
 
-  // Define the many-to-one relationship with the User entity
-  @ManyToOne(() => User, (user) => user.roomUsers) // Assuming you have a "roomUsers" property in the User entity
-  @JoinColumn({ name: "userId" }) // Use @JoinColumn to specify the foreign key column
+  @ManyToOne(() => User, (user) => user.roomUsers)
+  @JoinColumn({ name: "userId" })
   user: User;
 
   @ManyToOne(() => Room, (room) => room.roomUsers)

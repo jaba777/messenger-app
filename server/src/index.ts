@@ -7,8 +7,9 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import redisClient from "./redis";
 import cors from "cors";
-import connect from "./db";
+//import connect from "./db";
 import authRoutes from "./routes/authRoutes";
+import dataSource from "../ormconfig";
 
 dotenv.config();
 
@@ -27,14 +28,25 @@ const getActiveUsers = async () => {
   return Array.isArray(users) ? users : [];
 };
 
-connect
-  .then((connection) => {
+// connect
+//   .then((connection) => {
+//     console.log("Connected to the database");
+//     // Your code here
+//   })
+//   .catch((error) => {
+//     console.error("Error connecting to the database:", error);
+//   });
+
+async function connectToDatabase() {
+  try {
+    await dataSource.connect();
     console.log("Connected to the database");
-    // Your code here
-  })
-  .catch((error) => {
+  } catch (error) {
     console.error("Error connecting to the database:", error);
-  });
+  }
+}
+
+connectToDatabase();
 
 app.use(helmet());
 app.use(
@@ -53,13 +65,18 @@ app.use("/auth", authRoutes);
 
 redis.subscribe("channel");
 
-redis.on("message", async (channel, resp) => {
-  resp = JSON.parse(resp);
-  console.log(resp);
+redis.on("message", async (channel, resp: any) => {
+  try {
+    const parsedResp = JSON.parse(resp);
+
+    // if (parsedResp.event == "getrooms") {
+    //   io.emit("getrooms", parsedResp.rooms);
+    // }
+    console.log(parsedResp);
+  } catch (error) {}
 });
 
 io.on("connection", (socket) => {
-
   socket.on("auth", async (authData: { user: any }) => {
     await userJoin(socket.id, authData.user);
     redisClient.publish(

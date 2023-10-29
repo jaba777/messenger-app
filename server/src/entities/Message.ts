@@ -6,8 +6,7 @@ import {
   JoinColumn,
 } from "typeorm";
 
-import { Room } from "./Room"; 
-
+import { Room } from "./Room";
 
 @Entity()
 export class Message {
@@ -28,5 +27,4 @@ export class Message {
 
   @ManyToOne(() => Room, (room) => room.messages)
   room: Room;
-
 }

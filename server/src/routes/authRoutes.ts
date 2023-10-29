@@ -6,6 +6,7 @@ import {
   searchUsers,
   getRoom,
   getRooms,
+  getMessages,
 } from "../controllers/authController";
 
 const router: Router = express.Router();
@@ -16,5 +17,6 @@ router.get("/user", getUser);
 router.get("/search/:keyword", searchUsers);
 router.post("/room", getRoom);
 router.get("/rooms/:id", getRooms);
+router.post("/messages", getMessages);
 
 export default router;

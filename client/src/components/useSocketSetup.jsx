@@ -3,7 +3,7 @@ import { AuthContext } from "../context/authContext";
 import io from "socket.io-client";
 
 const useSocketSetup = () => {
-  const { auth, setActiveUsers } = useContext(AuthContext);
+  const { auth, setActiveUsers, setRooms } = useContext(AuthContext);
   useEffect(() => {
     let socket = io("http://localhost:4000", {
       "sync disconnect on unload": true,
@@ -21,6 +21,13 @@ const useSocketSetup = () => {
       setActiveUsers(authData);
       console.log(authData);
     });
+
+    // socket.on("getrooms", (data) => {
+    //   console.log("asad", data);
+    //   if (data !== null) {
+    //     setRooms(data);
+    //   }
+    // });
 
     socket.on("disconnect", () => {
       console.log("Disconnected from the server");

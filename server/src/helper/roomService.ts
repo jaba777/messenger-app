@@ -5,14 +5,16 @@ import {
   createRoom,
   createRoomUser,
   updateRoom,
+  getRoomByuuId,
+  getMessenger,
 } from "../services/messenger";
 import { Room } from "../entities/Room";
 import { RoomUser } from "../entities/RoomUser";
+import dataSource from "../../ormconfig";
 
 const getUserRoom = async (sender: number, receiver: number): Promise<any> => {
   try {
-    const userRepository: Repository<User> =
-      getConnection().getRepository(User);
+    const userRepository: Repository<User> = dataSource.getRepository(User);
     const findUser = await userRepository.findOne({
       where: { id: sender },
     });
@@ -53,4 +55,12 @@ const create = async (sender: number, receiver: number) => {
   } catch (error) {}
 };
 
-export { getUserRoom };
+const getRoomById = async (roomId: string, userId: number) => {
+  try {
+    const room = await getRoomByuuId(roomId, userId);
+    const messages = await getMessenger(room.id);
+    return { room, messages, user: room.roomUsers[0].user.name };
+  } catch (error) {}
+};
+
+export { getUserRoom, getRoomById };

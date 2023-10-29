@@ -11,6 +11,7 @@ import axios from "axios";
 import { AiOutlineUser } from "react-icons/ai";
 import { AuthContext } from "../context/authContext";
 import { BiUserCircle } from "react-icons/bi";
+import ChatInput from "../components/ChatInput";
 
 //BiUserCircle
 
@@ -18,9 +19,10 @@ const Home = () => {
   useSocketSetup();
   const [keyword, setkeyword] = React.useState("");
   const [users, setUsers] = React.useState([]);
-  const [getRoom, setGetRoom] = React.useState(null);
+  const [getRoom, setGetRoom] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const { activeUsers, auth, rooms } = React.useContext(AuthContext);
+  const [currentMessage, setCurrentMessage] = React.useState(null);
+  const { activeUsers, auth, rooms, setRooms } = React.useContext(AuthContext);
   const searchUsers = (e) => {
     setkeyword(e.target.value);
   };
@@ -51,6 +53,17 @@ const Home = () => {
     }
   };
 
+  const getRoomHandler = async (roomId) => {
+    try {
+      const messages = await axios.post("http://localhost:4000/auth/messages", {
+        roomId,
+        userId: auth.user.id,
+      });
+      console.log(messages.data.data);
+      setCurrentMessage(messages.data.data);
+    } catch (error) {}
+  };
+
   React.useEffect(() => {
     const delayInputTimeoutId = setTimeout(() => {
       if (keyword !== "") {
@@ -62,6 +75,12 @@ const Home = () => {
     return () => clearTimeout(delayInputTimeoutId);
   }, [keyword]);
 
+  // React.useEffect(() => {
+  //   window.socket.on("getRooms", (data) => {
+  //     console.log(data);
+  //   });
+  // }, []);
+
   const createRoom = async (receiverId) => {
     try {
       const users = await axios.post(`http://localhost:4000/auth/room`, {
@@ -70,8 +89,8 @@ const Home = () => {
       });
       console.log(users.data.room.findFirst);
       if (users.data.room.findFirst.is === true) {
-        setGetRoom(users.data.room);
-      } 
+        setGetRoom([...getRoom, users.data.room]);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -148,7 +167,11 @@ const Home = () => {
 
             <div className="room_container">
               {rooms.map((item, index) => (
-                <div key={index} className="room_box">
+                <div
+                  key={index}
+                  className="room_box"
+                  onClick={() => getRoomHandler(item.uuid)}
+                >
                   <div className="userIcon">
                     <BiUserCircle />
                   </div>
@@ -159,19 +182,58 @@ const Home = () => {
                   {/* <div>{item.roomUsers[0].user.name}</div> */}
                 </div>
               ))}
-              {getRoom !== null && (
-                <div className="room_box">
-                  <div className="userIcon">
-                    <BiUserCircle />
+              {getRoom.length > 0 &&
+                getRoom.map((item, index) => (
+                  <div className="room_box" key={index}>
+                    <div className="userIcon">
+                      <BiUserCircle />
+                    </div>
+                    <div className="room_text">
+                      <p>{item.user.name}</p>
+                    </div>
                   </div>
-                  <div className="room_text">
-                    <p>{getRoom.user.name}</p>
-                  </div>
-                </div>
-              )}
+                ))}
             </div>
           </div>
-          <div className="right"></div>
+
+          {currentMessage !== null ? (
+            <div className="right">
+              <div className="chat-header">
+                <div className="user-details">
+                  <div className="avatar">
+                    {/* <img
+                    src={`data:image/svg+xml;base64,${currentChat.avatarImage}`}
+                    alt=""
+                  /> */}
+                  </div>
+                  <div className="username">
+                    <h3>{currentMessage.user}</h3>
+                  </div>
+                </div>
+                {/* <Logout /> */}
+              </div>
+              <div className="chat-messages">
+                {/* {messages.map((message) => {
+                return (
+                  <div ref={scrollRef} key={uuidv4()}>
+                    <div
+                      className={`message ${
+                        message.fromSelf ? "sended" : "recieved"
+                      }`}
+                    >
+                      <div className="content ">
+                        <p></p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })} */}
+              </div>
+              <ChatInput />
+            </div>
+          ) : (
+            <div style={{ color: "#fff" }}>welcome</div>
+          )}
         </div>
       </div>
     </>

@@ -3,10 +3,11 @@ import { getConnection, Repository, ILike, Not } from "typeorm";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../entities/User";
-import { getUserRoom } from "../helper/roomService";
+import { getUserRoom, getRoomById } from "../helper/roomService";
 import { Room } from "../entities/Room";
 import { RoomUser } from "../entities/RoomUser";
 import redisClient from "../redis";
+import dataSource from "../../ormconfig";
 
 const jwtSecret: string = process.env.JWT_SECRET;
 
@@ -36,8 +37,8 @@ const registerController = async (
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const userRepository: Repository<User> =
-      getConnection().getRepository(User);
+    const userRepository: Repository<User> = dataSource.getRepository(User);
+
     const user = await userRepository.save({
       name,
       surname,
@@ -72,8 +73,8 @@ const loginController = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const userRepository: Repository<User> =
-      getConnection().getRepository(User);
+    const userRepository: Repository<User> = dataSource.getRepository(User);
+
     const findUser = await userRepository.findOne({ where: { email } });
 
     if (!findUser) {
@@ -134,8 +135,8 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const userRepository: Repository<User> =
-      getConnection().getRepository(User);
+    const userRepository: Repository<User> = dataSource.getRepository(User);
+
     const findUser = await userRepository.findOne({
       where: { email: decode?.email },
     });
@@ -160,8 +161,8 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
 const searchUsers = async (req: Request, res: Response): Promise<void> => {
   try {
     const { keyword } = req.params;
-    const userRepository: Repository<User> =
-      getConnection().getRepository(User);
+    const userRepository: Repository<User> = dataSource.getRepository(User);
+
     const result = await userRepository.find({
       where: [
         { name: ILike(`%${keyword}%`) },
@@ -189,7 +190,7 @@ const getRoom = async (req: Request, res: Response): Promise<void> => {
         message: "you can't create room with yourself",
       });
     }
-    
+
     const getroomUsers = await getUserRoom(sender, receiver);
 
     redisClient.publish("channel", JSON.stringify(getroomUsers));
@@ -211,10 +212,9 @@ const getRooms = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const roomUserRepository: Repository<RoomUser> =
-      getConnection().getRepository(RoomUser);
+      dataSource.getRepository(RoomUser);
 
-    const roomRepository: Repository<Room> =
-      getConnection().getRepository(Room);
+    const roomRepository: Repository<Room> = dataSource.getRepository(Room);
     const numericId = parseInt(id, 10);
 
     const rooms = await roomRepository
@@ -235,12 +235,25 @@ const getRooms = async (req: Request, res: Response) => {
       room.roomUsers = roomUsers;
     }
 
-    redisClient.publish('channel', JSON.stringify(rooms));
+    const roomEvent = {
+      event: "getrooms",
+      rooms: rooms,
+    };
+
+    redisClient.publish("channel", JSON.stringify(roomEvent));
 
     res.json({ rooms: rooms });
   } catch (error) {
     console.log(error);
   }
+};
+
+const getMessages = async (req: Request, res: Response) => {
+  try {
+    const { roomId, userId } = req.body;
+    const room = await getRoomById(roomId, userId);
+    res.json({ data: room });
+  } catch (error) {}
 };
 
 export {
@@ -250,4 +263,5 @@ export {
   searchUsers,
   getRoom,
   getRooms,
+  getMessages,
 };

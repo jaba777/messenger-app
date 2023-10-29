@@ -228,6 +228,7 @@ const Home = () => {
                   </div>
                 );
               })} */}
+              
               </div>
               <ChatInput />
             </div>

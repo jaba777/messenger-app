@@ -19,8 +19,10 @@ export const AuthProvider = ({ children }) => {
     setAuth({ user: data.user, token: data.token });
   };
 
+  const apiKey = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+
   const getUser = async () => {
-    fetch("http://localhost:4000/auth/user", {
+    fetch(`${apiKey}/user`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -44,7 +46,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getRooms = async (userId) => {
-    fetch(`http://localhost:4000/auth/rooms/${userId}`, {
+    fetch(`${apiKey}/rooms/${userId}`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -59,8 +61,13 @@ export const AuthProvider = ({ children }) => {
         return res.json();
       })
       .then((data) => {
-        console.log("arrayRoom", data.rooms[0]);
         setRooms(data.rooms);
+        // data.rooms.map((item) => {
+        //   console.log(item);
+        //   window.socket.emit("joinRoom", item.uuid);
+        //   console.log(item.uuid);
+        // });
+        console.log(data.rooms);
       })
       .catch((err) => {
         console.error("Error:", err);

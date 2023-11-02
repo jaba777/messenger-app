@@ -6,6 +6,7 @@ import { User } from "../entities/User";
 import { getUserRoom, getRoomById } from "../helper/roomService";
 import { Room } from "../entities/Room";
 import { RoomUser } from "../entities/RoomUser";
+import { Message } from "../entities/Message";
 import redisClient from "../redis";
 import dataSource from "../../ormconfig";
 
@@ -189,6 +190,7 @@ const getRoom = async (req: Request, res: Response): Promise<void> => {
         success: false,
         message: "you can't create room with yourself",
       });
+      return;
     }
 
     const getroomUsers = await getUserRoom(sender, receiver);
@@ -240,7 +242,7 @@ const getRooms = async (req: Request, res: Response) => {
       rooms: rooms,
     };
 
-    redisClient.publish("channel", JSON.stringify(roomEvent));
+    // redisClient.publish("channel", JSON.stringify(roomEvent));
 
     res.json({ rooms: rooms });
   } catch (error) {
@@ -256,6 +258,36 @@ const getMessages = async (req: Request, res: Response) => {
   } catch (error) {}
 };
 
+const sendMessage = async (req: Request, res: Response) => {
+  try {
+    const { roomId, userId } = req.params;
+    const { message } = req.body;
+    const userRepository: Repository<User> = dataSource.getRepository(User);
+    const roomRepository: Repository<Room> = dataSource.getRepository(Room);
+    const messageRepository: Repository<Message> =
+      dataSource.getRepository(Message);
+    const userIdNum = Number(userId);
+    const user = await userRepository.findOne({ where: { id: userIdNum } });
+    const room = await roomRepository.findOne({ where: { uuid: roomId } });
+    const createMessage = await messageRepository.save({
+      message,
+      room_user_id: user.id,
+      room_id: room.id,
+      room: room,
+      file: "",
+    });
+
+    const event = {
+      event: "newMessage",
+      message: createMessage,
+      uuid: room.uuid,
+    };
+    redisClient.publish("channel", JSON.stringify(event));
+
+    res.json({ createMessage });
+  } catch (error) {}
+};
+
 export {
   registerController,
   loginController,
@@ -264,4 +296,5 @@ export {
   getRoom,
   getRooms,
   getMessages,
+  sendMessage,
 };

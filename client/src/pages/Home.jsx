@@ -1,4 +1,3 @@
-import useSocketSetup from "../components/useSocketSetup";
 import "./Home.scss";
 import * as React from "react";
 import Box from "@mui/material/Box";
@@ -12,39 +11,32 @@ import { AiOutlineUser } from "react-icons/ai";
 import { AuthContext } from "../context/authContext";
 import { BiUserCircle } from "react-icons/bi";
 import ChatInput from "../components/ChatInput";
+import Header from "../components/Header";
 
 //BiUserCircle
 
 const Home = () => {
-  useSocketSetup();
+  // useSocketSetup();
   const [keyword, setkeyword] = React.useState("");
   const [users, setUsers] = React.useState([]);
   const [getRoom, setGetRoom] = React.useState([]);
+  const [message, setMessage] = React.useState("");
+  const [messageContainer, setMessageContainer] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [currentMessage, setCurrentMessage] = React.useState(null);
+  const chatMessagesRef = React.useRef(null);
+  const apiKey = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+
   const { activeUsers, auth, rooms, setRooms } = React.useContext(AuthContext);
   const searchUsers = (e) => {
     setkeyword(e.target.value);
   };
 
-  // const animatedUsers = useTrail(
-  //   users.length,
-  //   () => ({
-  //     from: { opacity: 0 },
-  //     to: { opacity: 1 },
-  //     delay: (index) => (index % 10) * 300,
-  //   }),
-  //   []
-  // );
-
   const searchUsersHandler = async () => {
     setLoading(true);
     try {
-      const users = await axios.get(
-        `http://localhost:4000/auth/search/${keyword}`
-      );
+      const users = await axios.get(`${apiKey}/search/${keyword}`);
 
-      console.log("Users:", users.data);
       setUsers(users.data);
       setLoading(false);
     } catch (error) {
@@ -55,12 +47,14 @@ const Home = () => {
 
   const getRoomHandler = async (roomId) => {
     try {
-      const messages = await axios.post("http://localhost:4000/auth/messages", {
+      const messages = await axios.post(`${apiKey}/messages`, {
         roomId,
         userId: auth.user.id,
       });
-      console.log(messages.data.data);
+
+      window.socket.emit("joinRoom", messages.data.data.room.uuid);
       setCurrentMessage(messages.data.data);
+      setMessageContainer(messages.data.data.messages);
     } catch (error) {}
   };
 
@@ -83,11 +77,11 @@ const Home = () => {
 
   const createRoom = async (receiverId) => {
     try {
-      const users = await axios.post(`http://localhost:4000/auth/room`, {
+      const users = await axios.post(`${apiKey}/room`, {
         sender: auth.user.id,
         receiver: receiverId,
       });
-      console.log(users.data.room.findFirst);
+
       if (users.data.room.findFirst.is === true) {
         setGetRoom([...getRoom, users.data.room]);
       }
@@ -95,9 +89,48 @@ const Home = () => {
       console.log(error);
     }
   };
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        `${apiKey}/message/${currentMessage.room.uuid}/${auth.user.id}`,
+        {
+          message: message,
+        }
+      );
+      setMessage("");
+    } catch (error) {}
+  };
+
+  React.useEffect(() => {
+    if (auth.user === null) return;
+    if (window.socket) {
+      window.socket.on("sendMessage", (message) => {
+        setMessageContainer([...messageContainer, message]);
+        console.log("message", message);
+      });
+    }
+  }, [messageContainer, auth, getRoom]);
+
+  const scrollChatToBottom = () => {
+    if (chatMessagesRef.current) {
+      const chatContainer = chatMessagesRef.current;
+      const lastMessage = chatContainer.lastElementChild;
+
+      if (lastMessage) {
+        lastMessage.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    scrollChatToBottom();
+  }, [messageContainer]);
+
   return (
     <>
       <div className="container">
+        <Header />
         <div className="chat-container">
           <div className="left">
             <Box sx={{ "& > :not(style)": { m: 1 } }}>
@@ -184,7 +217,11 @@ const Home = () => {
               ))}
               {getRoom.length > 0 &&
                 getRoom.map((item, index) => (
-                  <div className="room_box" key={index}>
+                  <div
+                    className="room_box"
+                    key={index}
+                    onClick={() => getRoomHandler(item.roomId)}
+                  >
                     <div className="userIcon">
                       <BiUserCircle />
                     </div>
@@ -212,25 +249,30 @@ const Home = () => {
                 </div>
                 {/* <Logout /> */}
               </div>
-              <div className="chat-messages">
-                {/* {messages.map((message) => {
-                return (
-                  <div ref={scrollRef} key={uuidv4()}>
-                    <div
-                      className={`message ${
-                        message.fromSelf ? "sended" : "recieved"
-                      }`}
-                    >
-                      <div className="content ">
-                        <p></p>
+              <div className="chat-messages" ref={chatMessagesRef}>
+                {messageContainer.map((message) => {
+                  return (
+                    <div key={message.id}>
+                      <div
+                        className={`message ${
+                          message.room_user_id === auth.user.id
+                            ? "sended"
+                            : "recieved"
+                        }`}
+                      >
+                        <div className="content ">
+                          <p>{message.message}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })} */}
-              
+                  );
+                })}
               </div>
-              <ChatInput />
+              <ChatInput
+                setMessage={setMessage}
+                sendMessage={sendMessage}
+                message={message}
+              />
             </div>
           ) : (
             <div style={{ color: "#fff" }}>welcome</div>

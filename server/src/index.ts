@@ -24,7 +24,7 @@ const io = new Server(server, {
 });
 
 const getActiveUsers = async () => {
-  const users = JSON.parse(await redisClient.get("spacejobs_activeUsers"));
+  const users = JSON.parse(await redisClient.get("activeUsers"));
   return Array.isArray(users) ? users : [];
 };
 
@@ -40,7 +40,6 @@ const getActiveUsers = async () => {
 async function connectToDatabase() {
   try {
     await dataSource.connect();
-    console.log("Connected to the database");
   } catch (error) {
     console.error("Error connecting to the database:", error);
   }
@@ -68,11 +67,9 @@ redis.subscribe("channel");
 redis.on("message", async (channel, resp: any) => {
   try {
     const parsedResp = JSON.parse(resp);
-
-    // if (parsedResp.event == "getrooms") {
-    //   io.emit("getrooms", parsedResp.rooms);
-    // }
-    console.log(parsedResp);
+    if (parsedResp.event == "newMessage") {
+      io.to(parsedResp.uuid).emit("sendMessage", parsedResp.message);
+    }
   } catch (error) {}
 });
 
@@ -87,8 +84,11 @@ io.on("connection", (socket) => {
     );
   });
 
+  socket.on("joinRoom", async (uuid: string) => {
+    socket.join(uuid);
+  });
+
   socket.on("disconnect", async () => {
-    console.log(socket.id);
     await userLeave(socket.id);
     socket.removeAllListeners();
     redisClient.publish(
@@ -108,12 +108,12 @@ async function userJoin(id: string, userData: any) {
 async function userLeave(socketId: string) {
   let users = await getActiveUsers();
   let actives = users.filter((user: any) => user.id !== socketId);
-  await redisClient.set("spacejobs_activeUsers", JSON.stringify(actives));
+  await redisClient.set("activeUsers", JSON.stringify(actives));
   io.emit("auth", actives);
 }
 
 const setActiveUser = async (user: { id: string; userData: any }) => {
-  let users = JSON.parse(await redisClient.get("spacejobs_activeUsers"));
+  let users = JSON.parse(await redisClient.get("activeUsers"));
   let find: any;
 
   if (users && users.length !== 0 && user.userData) {
@@ -132,10 +132,10 @@ const setActiveUser = async (user: { id: string; userData: any }) => {
     users = filter;
     users.push(user);
   } else {
-    users = JSON.parse(await redisClient.get("spacejobs_activeUsers")) || [];
+    users = JSON.parse(await redisClient.get("activeUsers")) || [];
   }
 
-  await redisClient.set("spacejobs_activeUsers", JSON.stringify(users));
+  await redisClient.set("activeUsers", JSON.stringify(users));
   io.emit("auth", users);
   return users;
 };

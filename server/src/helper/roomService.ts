@@ -23,8 +23,6 @@ const getUserRoom = async (sender: number, receiver: number): Promise<any> => {
 
     let findFirst = { is: false };
 
-    console.log("getRoomUserService", getRoomUserService);
-
     let room: Room;
     if (!getRoomUserService) {
       await create(sender, receiver);

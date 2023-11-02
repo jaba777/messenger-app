@@ -10,7 +10,7 @@
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "typeorm:migrate": "typeorm migration:create -n",
     "typeorm:run": "ts-node ./node_modules/typeorm/cli.js migration:run --dataSource ./ormconfig.ts",
-    "typeorm:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate -n"
+    "typeorm:generate": "typeorm-ts-node-esm migration:generate ./src/migrations/CreateUser -d ./ormconfig.ts"
   },
   "keywords": [],
   "author": "",

@@ -7,6 +7,7 @@ import {
   getRoom,
   getRooms,
   getMessages,
+  sendMessage,
 } from "../controllers/authController";
 
 const router: Router = express.Router();
@@ -18,5 +19,6 @@ router.get("/search/:keyword", searchUsers);
 router.post("/room", getRoom);
 router.get("/rooms/:id", getRooms);
 router.post("/messages", getMessages);
+router.post("/message/:roomId/:userId", sendMessage);
 
 export default router;

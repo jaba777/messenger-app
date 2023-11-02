@@ -9,7 +9,9 @@
   background-color: #131324;
   .chat-container {
     height: 85vh;
-    width: 85vw;
+    width: 1200px;
+    max-width: 96%;
+    margin: 0 auto;
     background-color: #00000076;
     display: grid;
     grid-template-columns: 30% 70%;
@@ -125,7 +127,7 @@
         .recieved {
           justify-content: flex-start;
           .content {
-            background-color: #9900ff20;
+            background-color: #0fc21e;
           }
         }
       }

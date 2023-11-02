@@ -1,5 +1,4 @@
 .chatinput_container {
-
   background-color: #080420;
   padding: 0 2rem;
   @media screen and (min-width: 720px) and (max-width: 1080px) {
@@ -11,11 +10,10 @@
     align-items: center;
     color: white;
     gap: 1rem;
-   
   }
   .input-container {
-     width: 100%;
-   
+    width: 100%;
+
     border-radius: 2rem;
     display: flex;
     align-items: center;
@@ -55,6 +53,19 @@
       svg {
         font-size: 2rem;
         color: white;
+      }
+    }
+    .span_emojy {
+      position: fixed;
+      margin-top: -35rem;
+      right: 2%;
+
+      em-emoji-picker {
+        width: 400px !important; 
+        height: 350px !important; 
+        --category-icon-size: 15px;
+        --background-rgb: 85, 170, 255;
+        --background-color: #080420;
       }
     }
   }

@@ -138,17 +138,35 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
 
     const userRepository: Repository<User> = dataSource.getRepository(User);
 
-    const findUser = await userRepository.findOne({
-      where: { email: decode?.email },
-    });
-
-    res.status(200).json({
-      success: true,
-      user: {
-        id: findUser.id,
-        name: findUser.name,
-        email: findUser.email,
-      },
+    redisClient.get(`users:${decode?.email}`, async (error, user) => {
+      if (error) console.log(error);
+      if (user !== null) {
+        console.log("cache hit");
+        res.status(200).json({
+          success: true,
+          user: JSON.parse(user),
+        });
+        return;
+      } else {
+        console.log("cache miss");
+        const findUser = await userRepository.findOne({
+          where: { email: decode?.email },
+        });
+        redisClient.setex(
+          `users:${decode?.email}`,
+          36000,
+          JSON.stringify(findUser)
+        );
+        res.status(200).json({
+          success: true,
+          user: {
+            id: findUser.id,
+            name: findUser.name,
+            email: findUser.email,
+          },
+        });
+        return;
+      }
     });
   } catch (error) {
     res.status(500).json({

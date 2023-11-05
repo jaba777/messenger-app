@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import "./authStyle.scss";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/authContext";
 
@@ -9,53 +9,45 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const apiKey = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const res = await axios.post("http://localhost:4000/auth/login", {
+      const res = await axios.post(`${apiKey}/login`, {
         email,
         password,
       });
-      setUser(res.data);
+      await setUser(res.data);
       navigate("/home");
-      console.log(res.data);
     } catch (error) {
       console.log(error);
     }
   };
   return (
     <>
-      <div className="register form-container">
-        <form onSubmit={handleSubmit}>
-          <h4 className="title">LOGIN FORM</h4>
-
-          <div className="mb-3">
-            <input
-              type="Email"
-              className="form-control"
-              id="exampleInputEmail"
-              placeholder="Enter your Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+      <div className="sign">
+        <form action="" onSubmit={handleSubmit}>
+          <div className="brand">
+            <h1>snappy</h1>
           </div>
-
-          <div className="mb-3">
-            <input
-              type="password"
-              className="form-control"
-              id="exampleInputPassword1"
-              placeholder="Enter your Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button type="submit" className="btn btn-primary">
-            LOGIN
-          </button>
+          <input
+            type="text"
+            placeholder="Username"
+            name="username"
+            onChange={(e) => setEmail(e.target.value)}
+            min="3"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            name="password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit">Log In</button>
+          <span>
+            Don't have an account ? <Link to="/register">Create One.</Link>
+          </span>
         </form>
       </div>
     </>

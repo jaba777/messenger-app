@@ -1,11 +1,20 @@
 {
-    "compilerOptions": {
-      "module": "NodeNext",
-      "moduleResolution": "node",
-      "baseUrl": "src",
-      "outDir": "dist",
-      "sourceMap": true,
-      "noImplicitAny": true,
-    },
-    "include": ["src/**/*"],
-  }
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "target": "ES6",
+    "emitDecoratorMetadata": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "baseUrl": "src",
+    "outDir": "dist",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "experimentalDecorators": true,
+    "types": ["node", "bcrypt", "jsonwebtoken", "typeorm", "ts-node"]
+  },
+  "paths": {
+    "*": ["src/*"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
